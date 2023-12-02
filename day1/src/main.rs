@@ -25,18 +25,15 @@ fn main() {
         for line in lines {
             if let Ok(ip) = line {
 
-                let mut modified_input = ip.to_string();
+                let mut modified_input = input.to_string();
                 for (word, digit) in word_to_digit.iter() {
                     modified_input = modified_input.replace(word, digit);
                 }
 
                 let digits: String = modified_input.chars().filter(|c| c.is_digit(10)).collect();
                 if let (Some(first_digit), Some(last_digit)) = (digits.chars().next(), digits.chars().last()) {
-                   
+                    println!("IP: {}", ip);
                     let result: String = first_digit.to_string() +""+ &last_digit.to_string();
-
-                    println!("IP: {} -> {} -> {}", ip, modified_input, result);
-
                     let resutl_int: i32 = result.parse().unwrap();
                     endresult = endresult + resutl_int;
 
