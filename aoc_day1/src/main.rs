@@ -8,6 +8,16 @@ fn main() {
     let mut endresult:i32 = 0;
 
     let word_to_digit: Vec<(&str, &str)> = vec![
+        // special cases
+        ("twone", "21"),
+        ("eighthree", "83"),
+        ("eightwo", "82"),
+        ("oneight", "18"),
+        ("threeight", "38"),
+        ("fiveight", "58"),
+        ("nineight", "98"),
+        ("sevenine","79"),
+        //basic cases
         ("one", "1"),
         ("two", "2"),
         ("three", "3"),
@@ -26,6 +36,7 @@ fn main() {
             if let Ok(ip) = line {
 
                 let mut modified_input = ip.to_string();
+
                 for (word, digit) in word_to_digit.iter() {
                     modified_input = modified_input.replace(word, digit);
                 }
