@@ -87,15 +87,23 @@ fn main() {
         let possible_blue = 14;
 
         let mut sum_result = 0;
+        let mut sum_result2 = 0;
+
 
         for game in game_results {
+            let sum_game = game.red*game.green*game.blue;
+
             if game.red <= possible_red && game.green <= possible_green && game.blue <= possible_blue {
                 println!("Game-Number: {}", game.game_number);
                 sum_result = sum_result + game.game_number;
             }
+
+            sum_result2 = sum_result2 + sum_game;
         }
 
-        print!("Sum-Result: {}", sum_result);
+        println!("Sum-Result: {}", sum_result);
+
+        println!("Sum-Result2: {}", sum_result2);
     }
     
 }
