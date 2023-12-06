@@ -1,9 +1,5 @@
 use std::fs::File;
 use std::io::{self, BufRead};
-use std::path::Path;
-
-
-#[derive(Debug, Clone)]
 
 struct InputData {
     seeds: Vec<u64>,
@@ -18,6 +14,8 @@ struct InputData {
 
 fn main() {
     let file_path = "input.txt";
+
+    println!("Start");
 
     if let Ok(file) = File::open(file_path) {
         let reader = io::BufReader::new(file);
@@ -83,91 +81,112 @@ fn main() {
         // println!("Temperature to humidity map: {:?}", input_data.temperature_to_humidity_map);
         // println!("Humidity to location map: {:?}", input_data.humidity_to_location_map);
 
-        for seed in &input_data.seeds {
-            println!("Seed: {}", seed);
+        let mut new_seeds: Vec<u64> = Vec::new();
+
+        for chunk in input_data.seeds.chunks(2) {
+            let start = chunk[0];
+            let length = chunk[1];
+            let end = start + length;
+
+            for i in start..end {
+                new_seeds.push(i);
+            }
+        }
+
+        //println!("New seeds: {:?}", new_seeds);
+
+        for seed in &new_seeds{
+            //println!("Seed: {}", seed);
             let mut ret_soil = *seed as i64;
 
-            for soil in input_data.seed_to_soil_map.clone() {
+            for soil in &input_data.seed_to_soil_map {
                 let res = get_mapping_value(*seed,soil);
                 if res > 0 {
                     //println!("Soil: {}", res);
                     ret_soil = res;
+                    break;
                 }
             }
 
-            println!("Soil: {}", ret_soil);
+            //println!("Soil: {}", ret_soil);
             let mut ret_fertilizer: i64 = ret_soil;
 
-            for fertilizer in input_data.soil_to_fertilizer_map.clone() {
+            for fertilizer in &input_data.soil_to_fertilizer_map {
                 let res = get_mapping_value(ret_soil as u64,fertilizer);
-                if res > 0 {
+                if res > -1 {
                     // println!("Fertilizer: {}", res);
                     ret_fertilizer = res;
+                    break;
                 }
             }
 
-            println!("Fertilizer: {}", ret_fertilizer);
+            //println!("Fertilizer: {}", ret_fertilizer);
 
             let mut ret_water: i64 = ret_fertilizer;
 
-            for water in input_data.fertilizer_to_water_map.clone() {
+            for water in &input_data.fertilizer_to_water_map {
                 let res = get_mapping_value(ret_fertilizer as u64,water);
-                if res > 0 {
+                if res > -1 {
                     // println!("Water: {}", res);
                     ret_water = res;
+                    break;
                 }
             }
 
-            println!("Water: {}", ret_water);
+            //println!("Water: {}", ret_water);
 
             let mut ret_light: i64 = ret_water;
 
-            for light in input_data.water_to_light_map.clone() {
+            for light in &input_data.water_to_light_map {
                 let res = get_mapping_value(ret_water as u64,light);
-                if res > 0 {
+                if res > -1 {
                     // println!("Light: {}", res);
                     ret_light = res;
+                    break;
                 }
             }
 
-            println!("Light: {}", ret_light);
+            //println!("Light: {}", ret_light);
 
 
             let mut ret_temperature: i64 = ret_light;
 
-            for temperature in input_data.light_to_temperature_map.clone() {
+            for temperature in &input_data.light_to_temperature_map {
                 let res = get_mapping_value(ret_light as u64,temperature);
-                if res > 0 {
+                if res > -1 {
                     // println!("Temperature: {}", res);
                     ret_temperature = res;
+                    break;
                 }
             }
 
-            println!("Temperature: {}", ret_temperature);
+            //println!("Temperature: {}", ret_temperature);
 
             let mut ret_humidity: i64 = ret_temperature;
 
-            for humidity in input_data.temperature_to_humidity_map.clone() {
+            for humidity in &input_data.temperature_to_humidity_map {
                 let res = get_mapping_value(ret_temperature as u64,humidity);
-                if res > 0 {
+                if res > -1 {
                     // println!("Humidity: {}", res);
                     ret_humidity = res;
+                    break;
                 }
             }
 
-            println!("Humidity: {}", ret_humidity);
+            //println!("Humidity: {}", ret_humidity);
 
             let mut ret_location: i64 = ret_humidity;
 
-            for location in input_data.humidity_to_location_map.clone() {
+            for location in &input_data.humidity_to_location_map {
                 let res = get_mapping_value(ret_humidity as u64,location);
-                if res > 0 {
+                if res > -1 {
                     // println!("Location: {}", res);
                     ret_location = res;
+                    break;
                 }
             }
 
-            println!("Location: {}", ret_location);
+            //println!("Location: {}", ret_location);
 
             result.push(ret_location);
         }
@@ -181,15 +200,15 @@ fn main() {
     }
 }
 
-fn get_mapping_value(input: u64, mapping: Vec<u64>) -> i64 {
+fn get_mapping_value(input: u64, mapping: &Vec<u64>) -> i64 {
     let destination = mapping[0];
     let source = mapping[1];
-    let length = mapping[2];
+    let length = mapping[2]-1;
     if input >= source && input <= source + length {
         // I don't know how to cast to i64
         let diff2 = destination as i64 - source as i64;
         return input as i64 + diff2;
       } else {
-        return 0;
+        return -1;
       }
 }
