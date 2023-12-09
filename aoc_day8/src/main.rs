@@ -2,6 +2,8 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
 use std::ptr::null;
+use num::integer::lcm;
+
 
 #[derive(Debug)]
 struct Node {
@@ -20,7 +22,6 @@ fn run() -> io::Result<()> {
     let file = File::open("input.txt")?;
     let reader = BufReader::new(file);
 
-    let mut steps_count = 0;
     let mut nodes: HashMap<String, Node> = HashMap::new();
     let mut directions = String::new();
 
@@ -55,27 +56,54 @@ fn run() -> io::Result<()> {
         }
     }
 
-    println!("Directions: {}", directions);
-    println!("{:?}", nodes);
+    //println!("Directions: {}", directions);
+    //println!("{:?}", nodes);
 
-    let mut current_node = nodes.get("AAA").unwrap();
+    let mut results: Vec<u64> = Vec::new();
     
-    while current_node.name != "ZZZ" {
-        for direction in directions.chars() {
-            steps_count += 1;
-            match direction {
-                'L' => {
-                    current_node = nodes.get(&current_node.left).unwrap();
-                },
-                'R' => {
-                    current_node = nodes.get(&current_node.right).unwrap();
-                },
-                _ => panic!("Invalid direction"),
+    let current_nodes: Vec<&Node> = nodes
+        .iter()
+        .filter(|&(index, _)| index.ends_with('A'))
+        .map(|(_, node)| node.clone())
+        .collect();
+
+    println!("Current Nodes: {:?}", current_nodes.len());
+
+    for mut current_node in current_nodes.clone() {
+      
+        let mut steps_count = 0;
+
+        while !current_node.name.ends_with("Z") {
+            for direction in directions.chars() {
+                steps_count += 1;
+                match direction {
+                    'L' => {
+                        current_node = nodes.get(&current_node.left).unwrap();
+                    },
+                    'R' => {
+                        current_node = nodes.get(&current_node.right).unwrap();
+                    },
+                    _ => panic!("Invalid direction"),
+                }
+
+                if (current_node.name.ends_with("Z")) {
+                    break;
+                }
             }
         }
+        results.push(steps_count);
+
     }
+
+    let endresult = lcm_multiple(&results);
+
     
-    println!("Steps: {}", steps_count);
+    println!("Results: {:?}", results);
+    println!("Endresult: {:?}", endresult);
 
     Ok(())
+}
+
+fn lcm_multiple(numbers: &[u64]) -> u64 {
+    numbers.iter().cloned().fold(1, lcm)
 }
