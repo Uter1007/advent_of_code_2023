@@ -53,7 +53,7 @@ fn compare_hands(hand1: &[CamelCard; 5], hand2: &[CamelCard; 5]) -> std::cmp::Or
 
 fn main() {
     let mut players: Vec<Player> = Vec::new();
-    if let Ok(lines) = read_lines("./input2.txt") {
+    if let Ok(lines) = read_lines("./input.txt") {
         for line in lines {
             if let Ok(ip) = line {
                 
@@ -80,7 +80,7 @@ fn main() {
 
     players.reverse();
 
-    //println!("Sorted Players: {:?}", players);
+    println!("Sorted Players: {:?}", players);
 
     let mut total: u64 = 0;
 
@@ -166,7 +166,11 @@ fn get_hand_type(cards: [CamelCard; 5]) -> (HandType, [CamelCard; 5]) {
 
     if four_count == 1 {
         
-        if (amount_of_jacks > 0) {
+        if amount_of_jacks == 1 {
+            return (HandType::FiveOfAKind, cards);
+        }
+
+        if amount_of_jacks == 4 {
             return (HandType::FiveOfAKind, cards);
         }
 
@@ -175,15 +179,25 @@ fn get_hand_type(cards: [CamelCard; 5]) -> (HandType, [CamelCard; 5]) {
 
     if three_count == 1 {
 
-        if (amount_of_jacks == 1) {
+        if amount_of_jacks == 1 {
             return (HandType::FourOfAKind, cards)
         }
 
-        if (amount_of_jacks == 2) {
+        if amount_of_jacks == 2 {
             return (HandType::FiveOfAKind, cards)
         }
 
+        if amount_of_jacks == 3 && pair_count == 1 {
+            return (HandType::FiveOfAKind, cards)
+
+        }
+
+        if amount_of_jacks == 3 && pair_count == 0 {
+            return (HandType::FourOfAKind, cards)
+        }
+
         if pair_count == 1 {
+    
             return (HandType::FullHouse, cards);
         }
 
@@ -192,16 +206,12 @@ fn get_hand_type(cards: [CamelCard; 5]) -> (HandType, [CamelCard; 5]) {
 
     if pair_count == 2 {
 
-        if (amount_of_jacks == 3) {
-            return (HandType::FiveOfAKind, cards)
-        }
-
-        if (amount_of_jacks == 2) {
+        if amount_of_jacks == 2 {
             return (HandType::FourOfAKind, cards)
         }
 
-        if (amount_of_jacks == 1) {
-            return (HandType::ThreeOfAKind, cards)
+        if amount_of_jacks == 1 {
+            return (HandType::FullHouse, cards)
         }
 
         return (HandType::TwoPair, cards);
@@ -209,18 +219,18 @@ fn get_hand_type(cards: [CamelCard; 5]) -> (HandType, [CamelCard; 5]) {
 
     if pair_count == 1 {
 
-        if (amount_of_jacks == 3) {
-            return (HandType::FiveOfAKind, cards)
-        }
-
-        if (amount_of_jacks == 2) {
-            return (HandType::FourOfAKind, cards)
-        }
-
-        if (amount_of_jacks == 1) {
+        if amount_of_jacks == 2 {
             return (HandType::ThreeOfAKind, cards)
         }
 
+        if amount_of_jacks == 1 {
+            return (HandType::ThreeOfAKind, cards)
+        }
+
+        return (HandType::OnePair, cards);
+    }
+
+    if amount_of_jacks == 1 {
         return (HandType::OnePair, cards);
     }
 
