@@ -43,9 +43,15 @@ fn main() {
 
     let mut counter = 0;
 
+    let mut all_pos: Vec<(usize, usize)> = Vec::new();
+
+    all_pos.push(current_position);
+
     loop {
         
         (current_position, last_pos) = get_next_pos(grid.clone(), current_position, last_pos);
+
+        all_pos.push(current_position);
 
         counter = counter + 1;
         let new_val = grid[current_position.0][current_position.1];
@@ -53,13 +59,57 @@ fn main() {
         if new_val == 'S' {
             break;
         }
-        
-
     }
 
     println!("counter: {}", (counter / 2));
 
+    // println!("all_pos: {:?}", all_pos);
 
+    // replace not visited positions with '.'
+
+    let mut new_grid = grid.clone();
+
+    for (row_index, row) in grid.clone().iter().enumerate() {
+        for (col_index, &c) in row.iter().enumerate() {
+
+            if !all_pos.contains(&(row_index, col_index)) {
+                new_grid[row_index][col_index] = '.';
+            }
+        }
+    }
+
+    /*# Corruption spreads like a virus within the Matrix
+for y, line in enumerate(mtrx):
+    in_simulated_reality = False
+    for x, c in enumerate(line):
+        # - flip simulated reality at |, J and L
+        if c == '|' or c == 'J' or c == 'L':
+            in_simulated_reality = not in_simulated_reality
+        elif c == '.' and in_simulated_reality:
+            mtrx[y][x] = 'I'
+            insiders.append((x, y))
+ */
+
+    let mut insiders: Vec<(usize, usize)> = Vec::new();
+
+    for (row_index, row) in new_grid.clone().iter().enumerate() {
+        let mut in_simulated_reality = false;
+
+        for (col_index, &c) in row.iter().enumerate() {
+            
+
+            if c == '|' || c == 'J' || c == 'L' {
+                in_simulated_reality = !in_simulated_reality;
+            } else if c == '.' && in_simulated_reality {
+                new_grid[row_index][col_index] = 'I';
+                insiders.push((row_index, col_index));
+            }
+        }
+    }
+
+    println!("new_grid: {:?}", new_grid);
+
+    println!("insiders: {:?}", insiders.len());
 
 }
 
