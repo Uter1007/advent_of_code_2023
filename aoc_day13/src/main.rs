@@ -9,7 +9,7 @@ struct Pattern {
 
 
 fn main() {
-    let input = fs::read_to_string("inputs.txt").unwrap();
+    let input = fs::read_to_string("inputs2.txt").unwrap();
     let patterns = parse_input(&input);
 
     println!("Part 1: {}", p1(&patterns));
