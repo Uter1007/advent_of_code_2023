@@ -1,120 +1,89 @@
-use std::fs::File;
-use std::io::{self, BufRead};
-use std::path::Path;
+use std::collections::HashMap;
+use std::fs;
 
-#[derive(Debug)]
-struct ProgramLine {
-    instructions: Vec<usize>,
-    lines: String
+fn calculate_solutions(characters: &Vec<char>, integers: &Vec<u128>, memoization: &mut HashMap<(Vec<u128>, Vec<char>), u128>) -> u128 {
+    if characters.is_empty() {
+        if integers.is_empty() {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    match characters[0] {
+        '.' => calculate_solutions(&characters[1..].to_vec(), integers, memoization),
+        '#' => calculate_hash_solutions(integers, characters, memoization),
+        '?' => calculate_solutions(&characters[1..].to_vec(), integers, memoization) + calculate_hash_solutions(integers, characters, memoization),
+        _ => panic!(">.> WHAT DID YOU DO?"),
+    }
 }
 
+fn calculate_hash_solutions(integers: &Vec<u128>, characters: &Vec<char>, memoization: &mut HashMap<(Vec<u128>, Vec<char>), u128>) -> u128 {
+    if let Some(&result) = memoization.get(&(integers.clone(), characters.clone())) {
+        return result;
+    }
+
+    if integers.is_empty() {
+        return 0;
+    }
+
+    let x = integers[0] as usize;
+    if characters.len() < x {
+        return 0;
+    }
+    for i in 0..x {
+        if characters[i] == '.' {
+            return 0;
+        }
+    }
+    if characters.len() == x {
+        if integers.len() == 1 {
+            return 1;
+        }
+        return 0;
+    }
+    if characters[x] == '#' {
+        return 0;
+    }
+    let result = calculate_solutions(&characters[(x + 1)..].to_vec(), &integers[1..].to_vec(), memoization);
+    memoization.insert((integers.clone(), characters.clone()), result);
+    result
+}
 
 fn main() {
-    if let Ok(lines) = read_lines("./input2.txt") {
-        let mut program_lines: Vec<ProgramLine> = Vec::new();
-        for line in lines {
-            if let Ok(ip) = line {
-                
-                let parts = ip.split(" ")
-                    .map(|s| s.trim())
-                    .filter(|s| !s.is_empty())
-                    .collect::<Vec<_>>();
+    let input = fs::read_to_string("input2.txt").unwrap();
+    let lines: Vec<&str> = input.lines().collect();
 
-                let instructions = parts[1].split(",")
-                    .map(|s| s.trim())
-                    .filter(|s| !s.is_empty())
-                    .map(|s| s.parse::<usize>().unwrap())
-                    .collect::<Vec<_>>();
+    let mut data_rows = Vec::new();
+    let mut memoization = HashMap::new();
 
-                program_lines.push(ProgramLine {
-                    instructions: instructions,
-                    lines: parts[0].to_string()
-                });
-            }
-        }
-
-        //println!("program_lines: {:?}", program_lines);
-
-        let mut results: Vec<usize> = Vec::new();
-
-        //let options: i32 = 2;
-        let chars = &['.', '#'];
-
-
-        for program_line in program_lines {
-            let mut line_result = 0; 
-            let to_check = program_line.instructions.clone();
-
-            // get all ?
-            //let how_many_unkown = program_line.lines.chars().filter(|&x| x == '?').count();
-            //println!("how_many_unkown: {}", how_many_unkown);
-            //println!("how many options: {}", options.pow(how_many_unkown as u32));
-
-            let length = program_line.lines.chars().filter(|&c| c == '?').count();
-
-            for i in 0..(1 << length) {
-                let mut variation = String::new();
-                let mut j = 0;
-        
-                for c in program_line.lines.chars() {
-                    if c == '?' {
-                        let bit = (i >> j) & 1;
-                        variation.push(chars[bit as usize]);
-                        j += 1;
-                    } else {
-                        variation.push(c);
-                    }
-                }
-        
-                //println!("{}", variation);
-
-                let to_control = get_group_by_input(variation);
-
-                if to_control == to_check {
-                    line_result += 1;
-                }
-
-            }
-
-            results.push(line_result);
-        
-        }
-
-        println!("results: {:?}", results);
-
-        println!("sum: {}", results.iter().sum::<usize>());
-
-        
+    for line in &lines {
+        let parts: Vec<&str> = line.split_whitespace().collect();
+        let springs = parts[0].chars().collect();
+        let groups: Vec<u128> = parts[1].split(',').map(|s| s.parse().unwrap()).collect();
+        data_rows.push((springs, groups));
     }
-}
 
-fn get_group_by_input(variation: String) -> Vec<usize>{
-    let mut result_vec = Vec::new();
-    let mut count = 0;
+    let total: u128 = data_rows.iter().map(|(springs, groups)| calculate_solutions(springs, groups, &mut memoization)).sum();
 
-    for c in variation.chars() {
-        match c {
-            '.' => {
-                if count > 0 {
-                    result_vec.push(count);
-                }
-                count = 0;
-            }
-            '#' => count += 1,
-            _ => {}
-        }
+    println!("Part1: {}", total);
+
+    data_rows.clear();
+
+    for line in lines {
+        let parts: Vec<&str> = line.split_whitespace().collect();
+        let springs: Vec<&str> = parts[0].split('?').collect();
+        let groups: Vec<&str> = parts[1].split(',').collect();
+
+        let new_springs: String = springs.iter().cycle().take(springs.len() * 5).cloned().collect::<Vec<&str>>().join("?");
+        let new_groups: String = groups.iter().cycle().take(groups.len() * 5).cloned().collect::<Vec<&str>>().join(",");
+
+        let springs_chars: Vec<char> = new_springs.chars().collect();
+        let groups_int: Vec<u128> = new_groups.split(',').map(|s| s.parse().unwrap()).collect();
+
+        data_rows.push((springs_chars, groups_int));
     }
-            
-    if count > 0 {
-        result_vec.push(count);
-    }
-    return result_vec;
-}
 
-// The output is wrapped in a Result to allow matching on errors
-// Returns an Iterator to the Reader of the lines of the file.
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where P: AsRef<Path>, {
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
+    let total: u128 = data_rows.iter().map(|(springs, groups)| calculate_solutions(springs, groups, &mut memoization)).sum();
+    println!("Part2: {}", total);
 }
