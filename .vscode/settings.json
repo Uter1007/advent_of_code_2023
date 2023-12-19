@@ -1,0 +1,5 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "./aoc_day12/Cargo.toml"
+    ]
+}
