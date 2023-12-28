@@ -81,6 +81,7 @@ fn energized_count(map: &mut Vec<Vec<(Tile, u8)>>, start: (BeamDir, usize, usize
             Tile::Space => { new_directions.push(direction); }
         }
 
+        // attempt to subtract with overflow thats why wrapping_sub
         for &new_direction in &new_directions {
             let (new_x, new_y) = match new_direction {
                 BeamDir::Right => (x + 1, y),
